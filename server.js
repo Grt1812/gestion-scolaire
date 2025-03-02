@@ -26,13 +26,15 @@ app.get('/', (req, res) => {
     res.send("🎉 API de gestion scolaire opérationnelle !");
 });
 
-// Importation des routes d'établissement
+// Importation des routes
 const etablissementRoutes = require('./routes/etablissements');
+const authRoutes = require('./routes/auth'); // 🔹 Ajout des routes d'authentification
 
-// Utilisation des routes pour les établissements
+// Utilisation des routes
 app.use('/api/etablissements', etablissementRoutes);
+app.use('/api/auth', authRoutes); // 🔹 Correction de l'URL d'authentification
 
-// Gestion des erreurs globales
+// Middleware de gestion des erreurs
 app.use((err, req, res, next) => {
     console.error("🔥 Erreur :", err.message);
     res.status(500).json({ message: "Une erreur interne est survenue." });
@@ -43,6 +45,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Serveur démarré sur le port ${PORT}`);
 });
-
-const authRoutes = require('./routes/auth');
-app.use('/auth', authRoutes);

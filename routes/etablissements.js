@@ -1,19 +1,17 @@
 const express = require('express');
-const Etablissement = require('../models/Etablissement');
-const auth = require('../middlewares/auth'); // Corrected path
 const router = express.Router();
+const etablissementController = require('../controllers/etablissementController');
+const auth = require('../middlewares/auth'); // Import the auth middleware
+const requireAdmin = require('../middlewares/requireAdmin'); // Assuming you have this middleware
 
-// ... rest of the code
+// 📌 Définition des routes
+router.get('/', etablissementController.getAllEtablissements);
+router.get('/:id', etablissementController.getEtablissementById);
+router.post('/', auth, requireAdmin, etablissementController.createEtablissement);
+router.put('/:id', auth, requireAdmin, etablissementController.updateEtablissement);
+router.delete('/:id', auth, requireAdmin, etablissementController.deleteEtablissement);
 
-/**
- * Middleware pour restreindre l'accès aux admins uniquement
- */
-const requireAdmin = (req, res, next) => {
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({ message: "Accès interdit" });
-    }
-    next();
-};
+module.exports = router;
 
 /**
  * Liste des niveaux par catégorie
@@ -143,4 +141,3 @@ router.get('/mon-etablissement', auth, async (req, res) => {
 });
 
 module.exports = router;
-

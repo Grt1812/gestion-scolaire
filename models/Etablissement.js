@@ -113,6 +113,4 @@ EtablissementSchema.methods.modifierEleve = async function(niveauNom, eleveId, n
 };
 
 // Création du modèle Etablissement
-const Etablissement = mongoose.model('Etablissement', EtablissementSchema);
-
-module.exports = Etablissement;
+module.exports = mongoose.model('Etablissement', EtablissementSchema);

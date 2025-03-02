@@ -59,4 +59,16 @@ router.post('/login', [
     }
 });
 
+// 🔹 Obtenir les informations de l'utilisateur connecté
+const auth = require('../middlewares/auth');
+
+router.get('/me', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId).select('-motDePasse').populate('etablissement');
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: "Erreur serveur", error: err.message });
+    }
+});
+
 module.exports = router;
