@@ -1,0 +1,18 @@
+{
+    "nom": "École Maternelle",
+    "niveaux": [
+        {
+            "nom": "Niveau 1",
+            "eleves": [
+                {
+                    "nom": "Doe",
+                    "prenom": "John",
+                    "dateNaissance": "2019-06-15",
+                    "paiements": [
+                        { "montant": 100 }
+                    ]
+                }
+            ]
+        }
+    ]
+}
