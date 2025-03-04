@@ -18,8 +18,8 @@ module.exports = router;
  */
 const niveauxParCategorie = {
     Maternelle: ["Niveau 1", "Niveau 2", "Niveau 3"],
-    Primaire: ["1ère A", "1ère B", "2ème A", "2ème B", "3ème A", "3ème B", "4ème A", "4ème B", "5ème A", "5ème B", "6ème A", "6ème B"],
-    Secondaire: ["7ème EB/A", "8ème EB/A", "1ère HP", "1ère HTS", "2ème HP", "2ème HTS", "3ème HP", "3ème HTS", "4ème HP", "4ème HTS"]
+    Primaire: ["1ère A", "1ère B","1ère C","1ère D", "2ème A", "2ème B","2ème C", "3ème A","3ème B", "3ème C", "4ème A", "4ème B","4ème C", "5ème A", "5ème B","5ème C", "6ème A", "6ème B"],
+    Secondaire: ["7ème EB/A","7ème EB/B","7ème EB/C", "8ème EB/A","8ème EB/B","8ème EB/C", "1ère HP", "1ère HTS","1ère HTN","1ère HTC","1ère HTEo", "2ème HP", "2ème HTS","2ème HTN","2ème HTC","2ème HTEo", "3ème HP", "3ème HTS","3ème HTN","3ème HTC","3ème HTEo", "4ème HP", "4ème HTS",,"4ème HTN","4ème HTC","4ème HTEo"]
 };
 
 /**

@@ -16,15 +16,27 @@ function validateTelephone(value) {
 }
 
 /**
- * Schéma des paiements d'un élève
+ * 📌 Schéma des paiements d'un élève
  */
 const PaiementSchema = new mongoose.Schema({
-    montant: { type: Number, required: true, min: 0 },  // Montant du paiement (minimum 0)
-    date: { type: Date, default: Date.now }  // Date du paiement (par défaut, date actuelle)
+    montant: { type: Number, required: true, min: 0 },  // Montant du paiement
+    date: { type: Date, default: Date.now },  // Date du paiement
+    mois: { type: String, required: true },  // Mois du paiement
+    trimestre: { 
+        type: String, 
+        enum: ['1er trimestre', '2ème trimestre', '3ème trimestre'], 
+        required: true 
+    },  // Trimestre concerné
+    anneeScolaire: { 
+        type: String, 
+        required: true, 
+        validate: [validateAnneeScolaire, "Format d'année scolaire invalide (ex: 2024-2025)"]
+    }
 });
 
+
 /**
- * Schéma des élèves
+ * 📌 Schéma des élèves
  */
 const EleveSchema = new mongoose.Schema({
     nom: { type: String, required: true, trim: true },
@@ -47,64 +59,79 @@ const EleveSchema = new mongoose.Schema({
         required: true, 
         validate: [validateAnneeScolaire, "Format d'année scolaire invalide (ex: 2024-2025)"]
     },
+    cas_social: { type: Boolean, default: false }, // Élève dispensé des paiements
     paiements: { type: [PaiementSchema], default: [] } // Liste des paiements effectués
 });
 
 /**
- * Schéma des niveaux scolaires
+ * 📌 Schéma des classes
  */
-const NiveauSchema = new mongoose.Schema({
+const ClasseSchema = new mongoose.Schema({
     nom: { type: String, required: true },
+    anneeScolaire: { 
+        type: String, 
+        required: true, 
+        validate: [validateAnneeScolaire, "Format d'année scolaire invalide (ex: 2024-2025)"]
+    },
     eleves: { type: [EleveSchema], default: [] }
 });
 
 /**
- * Schéma des établissements scolaires
+ * 📌 Schéma des établissements scolaires
  */
 const EtablissementSchema = new mongoose.Schema({
     nom: { type: String, required: true },
+    adresse: String,
+    telephone: {
+        type: String,
+        validate: [validateTelephone, "Numéro de téléphone invalide"]
+    },
     categorie: { 
         type: String, 
         enum: ['Maternelle', 'Primaire', 'Secondaire'], 
         required: true 
     },
-    niveaux: { type: [NiveauSchema], default: [] }
+    classes: { type: [ClasseSchema], default: [] }
 });
 
 /**
- * 📌 MÉTHODES STATIQUES
- * Permettent de gérer les établissements et les élèves
+ * 📌 MÉTHODES STATIQUES - Gestion des établissements et élèves
  */
 
-// 📌 Ajouter un élève dans un niveau spécifique
-EtablissementSchema.methods.ajouterEleve = async function(niveauNom, eleveData) {
-    const niveau = this.niveaux.find(n => n.nom === niveauNom);
-    if (!niveau) throw new Error("Niveau non trouvé");
+// 📌 Ajouter un élève dans une classe spécifique
+EtablissementSchema.methods.ajouterEleve = async function(classeNom, eleveData) {
+    const classe = this.classes.find(c => c.nom === classeNom);
+    if (!classe) throw new Error("Classe non trouvée");
     
-    niveau.eleves.push(eleveData);
+    classe.eleves.push(eleveData);
     await this.save();
     return this;
 };
 
-// 📌 Enregistrer un paiement pour un élève
-EtablissementSchema.methods.enregistrerPaiement = async function(niveauNom, eleveId, montant) {
-    const niveau = this.niveaux.find(n => n.nom === niveauNom);
-    if (!niveau) throw new Error("Niveau non trouvé");
+// 📌 Enregistrer un paiement pour un élève (sauf si en cas social)
+EtablissementSchema.methods.enregistrerPaiement = async function(classeNom, eleveId, montant, mois, trimestre, anneeScolaire) {
+    const classe = this.classes.find(c => c.nom === classeNom);
+    if (!classe) throw new Error("Classe non trouvée");
 
-    const eleve = niveau.eleves.id(eleveId);
+    const eleve = classe.eleves.id(eleveId);
     if (!eleve) throw new Error("Élève non trouvé");
 
-    eleve.paiements.push({ montant });
+    if (eleve.cas_social) {
+        throw new Error("Cet élève est en situation de cas social et ne doit pas payer.");
+    }
+
+    eleve.paiements.push({ montant, mois, trimestre, anneeScolaire });
     await this.save();
     return this;
 };
 
-// 📌 Modifier les informations d'un élève
-EtablissementSchema.methods.modifierEleve = async function(niveauNom, eleveId, newData) {
-    const niveau = this.niveaux.find(n => n.nom === niveauNom);
-    if (!niveau) throw new Error("Niveau non trouvé");
 
-    const eleve = niveau.eleves.id(eleveId);
+// 📌 Modifier les informations d'un élève
+EtablissementSchema.methods.modifierEleve = async function(classeNom, eleveId, newData) {
+    const classe = this.classes.find(c => c.nom === classeNom);
+    if (!classe) throw new Error("Classe non trouvée");
+
+    const eleve = classe.eleves.id(eleveId);
     if (!eleve) throw new Error("Élève non trouvé");
 
     Object.assign(eleve, newData); // Mise à jour des données
@@ -112,5 +139,45 @@ EtablissementSchema.methods.modifierEleve = async function(niveauNom, eleveId, n
     return this;
 };
 
-// Création du modèle Etablissement
-module.exports = mongoose.model('Etablissement', EtablissementSchema);
+// 📌 Récupérer la liste des élèves d'une classe spécifique
+EtablissementSchema.methods.getElevesByClasse = function(classeNom) {
+    const classe = this.classes.find(c => c.nom === classeNom);
+    if (!classe) throw new Error("Classe non trouvée");
+
+    return classe.eleves;
+};
+
+// 📌 Récupérer les paiements d'un élève
+EtablissementSchema.methods.getPaiementsByEleve = function(classeNom, eleveId) {
+    const classe = this.classes.find(c => c.nom === classeNom);
+    if (!classe) throw new Error("Classe non trouvée");
+
+    const eleve = classe.eleves.id(eleveId);
+    if (!eleve) throw new Error("Élève non trouvé");
+
+    return eleve.paiements;
+};
+
+// 📌 Générer un rapport des paiements pour une année scolaire
+EtablissementSchema.methods.getRapportPaiementsParTrimestre = function(anneeScolaire, trimestre) {
+    let rapport = [];
+
+    this.classes.forEach(classe => {
+        classe.eleves.forEach(eleve => {
+            const paiementsTrimestre = eleve.paiements.filter(p => 
+                p.anneeScolaire === anneeScolaire && p.trimestre === trimestre
+            );
+            const totalPaye = paiementsTrimestre.reduce((total, p) => total + p.montant, 0);
+
+            rapport.push({
+                nom: `${eleve.nom} ${eleve.post_nom} ${eleve.prenom}`,
+                classe: classe.nom,
+                trimestre,
+                totalPaye,
+                casSocial: eleve.cas_social
+            });
+        });
+    });
+
+    return rapport;
+};

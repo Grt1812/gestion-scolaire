@@ -28,11 +28,13 @@ app.get('/', (req, res) => {
 
 // Importation des routes
 const etablissementRoutes = require('./routes/etablissements');
-const authRoutes = require('./routes/auth'); // 🔹 Ajout des routes d'authentification
+const authRoutes = require('./routes/auth'); 
+const paymentRoutes = require('./routes/payments'); // 🔹 Import des routes de paiement
 
 // Utilisation des routes
 app.use('/api/etablissements', etablissementRoutes);
-app.use('/api/auth', authRoutes); // 🔹 Correction de l'URL d'authentification
+app.use('/api/auth', authRoutes); 
+app.use('/api/payments', paymentRoutes); // 🔹 Ajout de la route des paiements
 
 // Middleware de gestion des erreurs
 app.use((err, req, res, next) => {
