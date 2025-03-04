@@ -23,10 +23,11 @@ router.post('/payer', async (req, res) => {
         const paiement = new Payment({ eleve: eleveId, montant, trimestre });
         await paiement.save();
 
-        res.status(201).json({ message: "Paiement enregistré avec succès", paiement });
+        res.status(201).json({ message: "✅ Paiement enregistré avec succès", paiement });
 
     } catch (error) {
-        res.status(500).json({ message: "Erreur serveur", error: error.message });
+        console.error("Erreur lors du paiement :", error);
+        res.status(500).json({ message: "❌ Erreur serveur", error: error.message });
     }
 });
 
@@ -38,13 +39,24 @@ router.get('/verifier/:eleveId/:trimestre', async (req, res) => {
         const paiement = await Payment.findOne({ eleve: eleveId, trimestre });
 
         if (paiement) {
-            res.json({ message: `L'élève a déjà payé pour le ${trimestre}`, paiement });
+            res.json({ message: `✅ L'élève a déjà payé pour le ${trimestre}`, paiement });
         } else {
-            res.json({ message: `L'élève n'a pas encore payé pour le ${trimestre}` });
+            res.json({ message: `❌ L'élève n'a pas encore payé pour le ${trimestre}` });
         }
 
     } catch (error) {
-        res.status(500).json({ message: "Erreur serveur", error: error.message });
+        console.error("Erreur de vérification :", error);
+        res.status(500).json({ message: "❌ Erreur serveur", error: error.message });
+    }
+});
+
+// 🔹 Obtenir tous les paiements
+router.get('/all', async (req, res) => {
+    try {
+        const paiements = await Payment.find().populate('eleve', 'nom prenom classe'); // Popule l'élève
+        res.json(paiements);
+    } catch (error) {
+        res.status(500).json({ message: "❌ Erreur serveur", error: error.message });
     }
 });
 

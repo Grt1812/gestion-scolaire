@@ -28,13 +28,15 @@ app.get('/', (req, res) => {
 
 // Importation des routes
 const etablissementRoutes = require('./routes/etablissements');
-const authRoutes = require('./routes/auth'); 
-const paymentRoutes = require('./routes/payments'); // 🔹 Import des routes de paiement
+const authRoutes = require('./routes/auth');
+const paymentRoutes = require('./routes/payments'); 
+const reportsRoutes = require('./routes/reports'); // 🔹 Ajout des routes de rapports
 
 // Utilisation des routes
 app.use('/api/etablissements', etablissementRoutes);
 app.use('/api/auth', authRoutes); 
-app.use('/api/payments', paymentRoutes); // 🔹 Ajout de la route des paiements
+app.use('/api/payments', paymentRoutes); 
+app.use('/api/reports', reportsRoutes); // 🔹 Ajout des routes pour les rapports
 
 // Middleware de gestion des erreurs
 app.use((err, req, res, next) => {
